@@ -1,0 +1,16 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import javax.swing.JPanel;
+
+public class ${NAME} extends JPanel {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Create the panel.
+     */
+    public ${NAME}() {
+
+    }
+
+}

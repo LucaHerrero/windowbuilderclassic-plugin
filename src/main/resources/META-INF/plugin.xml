@@ -1,0 +1,47 @@
+<idea-plugin>
+    <id>com.herreromarcos.idea.windowbuilderclassic</id>
+    <name>WindowBuilder Classic</name>
+    <vendor email="luca@herreromarcos.com" url="https://github.com/LucaHerrero/windowbuilderclassic-intellij">Luca Herrero Marcos</vendor>
+
+    <description><![CDATA[
+    A visual designer for <b>Java Swing</b> that works directly on plain Java code – modelled on the Eclipse WindowBuilder.
+    There are no <code>.form</code> files and no generated sections: the designer reads the Java source, shows the
+    window and writes every change back as ordinary code you can keep editing by hand.
+    <ul>
+      <li>A <i>Design</i> tab next to the source of every Swing class (JFrame, JPanel, JDialog, JInternalFrame and
+          classes that create a window, such as an "Application Window")</li>
+      <li>Palette, component tree and property table</li>
+      <li>Two-way editing: changes in the source show up in the designer, changes in the designer become Java code
+          in the WindowBuilder style</li>
+      <li>Absolute layout with snapping and alignment tools, BorderLayout, FlowLayout, GridLayout, GridBagLayout (column and
+          row headers, WindowBuilder-style constraints and gaps), CardLayout, BoxLayout, SpringLayout and GroupLayout
+          (NetBeans forms open, too); MigLayout and FormLayout when the library is on the classpath</li>
+      <li>JScrollPane, JSplitPane, JTabbedPane, menus and popup menus, struts &amp; springs, AWT components</li>
+      <li>Event handlers, multiple selection, cut/copy/paste, convert local ↔ field, externalize strings</li>
+      <li>Custom components are rendered by running the compiled project code (can be switched off)</li>
+      <li>Wizards for JFrame, JPanel, JDialog, JInternalFrame and Application Window</li>
+    </ul>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>com.intellij.properties</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.herreromarcos.idea.windowbuilderclassic.editor.WindowBuilderEditorProvider"/>
+        <projectConfigurable parentId="tools" instance="com.herreromarcos.idea.windowbuilderclassic.settings.WindowBuilderConfigurable"
+                             id="windowbuilderclassic" displayName="WindowBuilder Classic"/>
+        <internalFileTemplate name="Swing JFrame"/>
+        <internalFileTemplate name="Swing JPanel"/>
+        <internalFileTemplate name="Swing JDialog"/>
+        <internalFileTemplate name="Swing JInternalFrame"/>
+        <internalFileTemplate name="Swing Application Window"/>
+    </extensions>
+
+    <actions>
+        <action id="WindowBuilder.NewClass" class="com.herreromarcos.idea.windowbuilderclassic.actions.NewWindowBuilderClassAction"
+                text="WindowBuilder Class" description="Create a Swing class to edit with WindowBuilder Classic" icon="/icons/designer.svg">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewClass"/>
+        </action>
+    </actions>
+</idea-plugin>

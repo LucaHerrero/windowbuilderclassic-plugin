@@ -1,0 +1,73 @@
+# Baut das Plugin bei jedem Push auf master und veröffentlicht es als GitHub Release.
+# Tag und Release-Name kommen aus der Version in build.gradle.kts (z.B. 0.2.0 → v0.2.0).
+# Existiert das Release zu dieser Version bereits, wird nur gebaut und getestet – für ein
+# neues Release muss die Version in build.gradle.kts erhöht werden.
+name: Build & Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Determine version
+        id: version
+        run: |
+          version=$(./gradlew properties --quiet --console=plain | sed -n 's/^version: //p')
+          if [ -z "$version" ]; then
+            echo "::error::Version konnte nicht aus build.gradle.kts gelesen werden"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Test, build and verify plugin
+        run: ./gradlew test buildPlugin verifyPlugin
+
+      - name: Check whether release already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release ${{ steps.version.outputs.tag }} existiert bereits – Version in build.gradle.kts erhöhen für ein neues Release."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            build/distributions/*.zip \
+            --target "${{ github.sha }}" \
+            --title "WindowBuilder Classic ${{ steps.version.outputs.version }}" \
+            --generate-notes
